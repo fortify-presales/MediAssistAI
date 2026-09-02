@@ -45,7 +45,12 @@ ScaffoldingReadMe.txt
 CodeCoverage/
 .fortify/
 fortify-output/
-src/Api/mediassist.db
+src/Api/mediassist.db*
+.fdc.env
+**/*.sarif
+**/*.fpr
+
+newman
 
 # MSBuild Binary and Structured Log
 *.binlog

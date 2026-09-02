@@ -32,12 +32,13 @@ Semantic Kernel is configured from the `OpenAI` section. Production also require
 Run a local Fortify scan and write an FPR to the ignored `artifacts\fortify\sast` directory:
 
 ```powershell
-.\scripts\run-fortify-sast.ps1
+sourceanalyzer -b MediAssistAI-local -clean
+sourceanalyzer -b MediAssistAI-local dotnet build src/Api/MediAssistAI.Api.csproj --configuration Release
+sourceanalyzer -b MediAssistAI-local -scan -f MediAssistAI.fpr
+auditworkbench MediAssistAI.fpr
 ```
 
-Use `-SkipBuild` only to scan a previously translated Fortify build session.
-
-If a terminal cannot locate its .NET SDK, provide the SDK root explicitly:
+If a terminal cannot locate its .NET SDK, set the SDK root explicitly:
 
 ```powershell
 .\scripts\run-fortify-sast.ps1 -DotnetRoot "$HOME\.dotnet"
@@ -47,6 +48,15 @@ Run Fortify Agentic Analyzer against the source tree and supply the local SAST F
 
 ```powershell
 .\scripts\run-fortify-agentic-analyzer.ps1 -FortifyFprPath ".\artifacts\fortify\sast\MediAssistAI.fpr"
+
+```
+
+Alternatively, run Fortify Agentic Analyzer against an existing Fortify on Demand Release:
+
+```powershell
+Get-ChildItem Env: | Where-Object Name -like "FCLI_DEFAULT_SSC_*" | ForEach-Object { Remove-Item "Env:$($_.Name)" }
+fcli fod session login
+fortifyaa  -scan . --scope src/Agents,src/Api --fod-release "fortify-presales/MediAssistAI:main" --output MediAssistAI.faa.sarif -clean
 ```
 
 FAA SARIF output is written to the ignored `artifacts\fortify\faa` directory by default.

@@ -8,7 +8,7 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:8080",
+      "value": "http://localhost:5004",
       "type": "string"
     },
     {
@@ -38,7 +38,7 @@
     },
     {
       "key": "safeFilePath",
-      "value": "/etc/hostname",
+      "value": "appsettings.json",
       "type": "string"
     },
     {

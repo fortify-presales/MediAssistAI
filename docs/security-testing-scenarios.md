@@ -35,9 +35,8 @@ Treat scanner results as complementary evidence: use SAST for source-level defec
 Fortify Agentic Analyzer is a file-based scanner. It analyzes the source project and writes SARIF; it does not call the API or provide HTTP request bodies. Scan the agent implementation with:
 
 ```powershell
-fortifyaa -scan . --scope src/Agents,src/Api --fpr <local-sast.fpr> --output artifacts/fortify/faa/MediAssistAI.faa.sarif --message-format plain
+fortifyaa -scan . --scope src/Agents,src/Api --fpr artifacts/fortify/sast/MediAssistAI.fpr --output artifacts/fortify/faa/MediAssistAI.faa.sarif
 ```
-
 The repository FAA runner requires `-FortifyFprPath`, so each execution explicitly identifies its local SAST baseline.
 
 The runner removes inherited `FCLI_DEFAULT_SSC_*` variables for its process so FAA uses the configured FoD context when both platform credential sets are present.

@@ -47,8 +47,13 @@ public sealed class InsecureTestingController(MediAssistDbContext database, IHtt
     [Consumes("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [SwaggerOperation(Tags = new[] { "Commands" }, Summary = "Run a command", Description = "Security Testing endpoint: intentionally susceptible to command injection.")]
-    public IActionResult RunCommand([FromBody] CommandRequest request) =>
-        Ok(Process.Start(new ProcessStartInfo("cmd.exe", "/c " + request.Command) { UseShellExecute = false }));
+    public async Task<IActionResult> RunCommand([FromBody] CommandRequest request)
+    {
+        // Process itself is not JSON-serializable; return only its identifying fields.
+        using var process = Process.Start(new ProcessStartInfo("cmd.exe", "/c " + request.Command) { UseShellExecute = false });
+        if (process is not null) await process.WaitForExitAsync();
+        return Ok(new { process?.Id, process?.ExitCode });
+    }
 
     [HttpGet("credentials")]
     [SwaggerOperation(Tags = new[] { "Credentials" }, Summary = "Retrieve API credentials", Description = "Security Testing endpoint: intentionally exposes a hardcoded credential.")]
