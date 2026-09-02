@@ -1,0 +1,63 @@
+# Create GitHub Action Repository Variables for your version of the application:
+#   FOD_URL                     - FoD Portal URL for your tenant (e.g. https://ams.fortify.com)
+#   FOD_DEFAULT_OWNER           - The user id of the Application Owner (only needed if an application does not already exist)
+#   FOD_DEFAULT_ASSESSMENT_TYPE - The default Assessment Type to use, e.g. "Static Assessment"
+# Create GitHub Action Secrets for your version of the application:
+#   FOD_CLIENT_ID should be an API Key obtained from your FoD tenant.
+#   FOD_CLIENT_SECRET should be the secret for the API Key obtained for your FoD tenant.
+# Helpful hints:
+#   API Key credentials can be obtained from your FoD tenant, under Administration -> Settings -> API
+#   It is recommended to create credentials with 'Security Lead' Role selected.
+#   "Automated Audit preference" should be configured for the release's Static Scan Settings.
+name: Fortify on Demand Scan
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+
+jobs:
+  Fortify-AST-Scan:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+      pull-requests: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore MediAssistAI.sln
+
+      # Perform Fortify on Demand SAST + SCA scan and import SAST results into GitHub code scanning alerts
+      - name: Run FoD SAST+SCA Scan
+        uses: fortify/github-action@v3
+        env:
+          FOD_URL: ${{ vars.FOD_URL }}
+          FOD_CLIENT_ID: ${{secrets.FOD_CLIENT_ID}}
+          FOD_CLIENT_SECRET: ${{secrets.FOD_CLIENT_SECRET}}
+          DO_SETUP: true
+          SETUP_EXTRA_OPTS: ${{ format('--sdlc-status Development --app-owner {0}', vars.FOD_DEFAULT_OWNER) }}
+          PACKAGE_EXTRA_OPTS: -bt none -exclude "DEMO.md" -exclude "SECURITY.md" -exclude "tests"
+          SAST_ASSESSMENT_TYPE: ${{ vars.FOD_DEFAULT_ASSESSMENT_TYPE }}
+          SAST_WAIT_EXTRA_OPTS: --timeout 3h
+          DO_SAST_SCAN: true
+          DO_SCA_SCAN: true
+          DO_AVIATOR_AUDIT: true
+          #DO_AVIATOR_REMEDIATIONS: true
+          COPY_FROM_RELEASE: "${{ github.event.repository.name }}:${{ github.event.repository.default_branch }}"
+          DO_WAIT: true
+          DO_CHECK_POLICY: true
+          DO_JOB_SUMMARY: true
+          DO_PR_COMMENT: true
+          DO_EXPORT: true
