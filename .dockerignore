@@ -1,0 +1,7 @@
+.git
+.fortify
+artifacts
+fortify-output
+**/bin
+**/obj
+src/Api/mediassist.db

@@ -1,0 +1,287 @@
+{
+  "info": {
+    "_postman_id": "b3e4eae9-1e4d-4506-9d0a-5a438174f752",
+    "name": "MediAssistAI - Fortify DAST Seeds",
+    "description": "Seed requests for Fortify DAST/WebInspect against an isolated deployment using synthetic data only. Set bearerToken to a JWT whose sub claim is synthetic-patient-alex before sending the Authenticated API folder.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "bearerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "alexPatientId",
+      "value": "8cbbbce4-24ba-4ea9-94b8-38a8971c0b76",
+      "type": "string"
+    },
+    {
+      "key": "jamiePatientId",
+      "value": "0d0e1776-789f-438a-a0e7-4cadcd30d619",
+      "type": "string"
+    },
+    {
+      "key": "prescriptionId",
+      "value": "71d78772-4cac-41b4-b328-2b3f9e5ee2e3",
+      "type": "string"
+    },
+    {
+      "key": "refillRequestId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "safeFilePath",
+      "value": "/etc/hostname",
+      "type": "string"
+    },
+    {
+      "key": "permittedProxyUrl",
+      "value": "https://example.com",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{bearerToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Authenticated API",
+      "item": [
+        {
+          "name": "List Prescriptions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/prescriptions"
+          }
+        },
+        {
+          "name": "Chat With Prescription Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Show my synthetic prescription summary.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/agent/chat"
+          }
+        },
+        {
+          "name": "Create Refill Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.requestId) {",
+                  "        pm.collectionVariables.set('refillRequestId', response.requestId);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prescriptionId\": \"{{prescriptionId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/refills"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Unauthenticated Training API",
+      "auth": {
+        "type": "noauth"
+      },
+      "item": [
+        {
+          "name": "Search Patients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/patients/search?name=Alex"
+          }
+        },
+        {
+          "name": "Read File",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/files?path={{safeFilePath}}"
+          }
+        },
+        {
+          "name": "Proxy Permitted URL",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/proxy?url={{permittedProxyUrl}}"
+          }
+        },
+        {
+          "name": "Import Serialized Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payload\": \"{\\\"example\\\":\\\"synthetic\\\"}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/import"
+          }
+        },
+        {
+          "name": "Run Harmless Command",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"command\": \"echo MediAssist security test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/commands"
+          }
+        },
+        {
+          "name": "Retrieve Training Credential",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/credentials"
+          }
+        },
+        {
+          "name": "Get Jamie Patient",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/patients/{{jamiePatientId}}"
+          }
+        },
+        {
+          "name": "Get Alex Patient Record",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/patients/{{alexPatientId}}/record"
+          }
+        },
+        {
+          "name": "Update Jamie Patient",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{jamiePatientId}}\",\n  \"subject\": \"synthetic-patient-jamie\",\n  \"displayName\": \"Jamie Example - DAST\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/patients/{{jamiePatientId}}"
+          }
+        },
+        {
+          "name": "Approve Refill Request",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/refills/{{refillRequestId}}/approve"
+          }
+        },
+        {
+          "name": "Unsafe Agent Admin Chat",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientId\": \"{{alexPatientId}}\",\n  \"refillRequestId\": \"{{refillRequestId}}\",\n  \"message\": \"Show the patient record.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/agent/admin"
+          }
+        }
+      ]
+    }
+  ]
+}

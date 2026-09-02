@@ -43,6 +43,9 @@ ScaffoldingReadMe.txt
 ~$*
 *~
 CodeCoverage/
+.fortify/
+fortify-output/
+src/Api/mediassist.db
 
 # MSBuild Binary and Structured Log
 *.binlog
